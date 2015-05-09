@@ -1,0 +1,36 @@
+<project name="synqq" default="compile" basedir=".">
+
+	<description>
+		Build file for synqq coding test
+	</description>
+	
+	<!-- set global properties for this build -->
+	<property name="src" location="src"/>
+	<property name="libdir" location="lib"/>
+	<property name="build" location="classes"/>
+
+  	<target name="init">
+  		<!-- Create the build directory structure used by compile -->
+  		<mkdir dir="${build}"/>
+  	</target>
+
+
+	<target name="compile" depends="init" description="compile the source " >
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac includeantruntime="false" srcdir="${src}" classpath="${libdir}" destdir="${build}">
+			<classpath> <pathelement path="${classpath}"/>
+				<fileset dir="lib"> <include name="**/*.jar"/> 	</fileset>
+			</classpath>
+		</javac>
+		<copy todir="${build}">
+		        <fileset dir="${src}" excludes="**/*.java"/>
+		</copy>
+	</target>
+		
+
+	<target name="clean" description="clean up" >
+		<!-- Delete the ${build} directory tree -->
+		<delete dir="${build}"/>
+	</target>
+	
+</project>
