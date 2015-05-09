@@ -1,13 +1,25 @@
 package com.synqq.client;
 
 import java.io.*;
+import java.net.*;
 
 import com.synqq.server.handlers.ServerHandler;
 
 public class SynqqClient {
 
+	DatagramSocket clientSocket;
+	InetAddress IPAddress;
+	
 	public SynqqClient(String filename) {
-		// TODO Auto-generated constructor stub
+
+		try {
+			clientSocket = new DatagramSocket();
+			IPAddress = InetAddress.getByName("localhost");
+		}
+		catch (Exception e)
+		{
+			System.err.println("Error: " + e);
+		}
 		readFile(filename);
 	}
 
@@ -24,20 +36,38 @@ public class SynqqClient {
 	       String thisLine = null;
 	       BufferedReader br = new BufferedReader(new FileReader(filename));
 	       String threadKey = String.valueOf(System.currentTimeMillis());
-	       ServerHandler handler = new ServerHandler(threadKey);
+	       	       
 	       while ((thisLine = br.readLine()) != null) { 
 	         System.out.println(thisLine);
-	         handler.handleData(thisLine);
-	       } // end while 
-	       handler.finish();
-       
+	         sendData(threadKey, thisLine);
+	       } // end while      
 	 
+	       sendData(threadKey, "EOF");
 	       br.close();
 	       
 	     } // end try
 	     catch (IOException e) {
 	       System.err.println("Error: " + e);
 	     }
+	}
+	
+	public void sendData(String threadKey, String line)
+	
+	{
+		byte[] sendData = new byte[1024];
+		
+		System.out.println("Client sending UDP packet:" + line);
+	
+	    try {
+	    	sendData = (threadKey + "," +  line).getBytes();
+	    	DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877); 
+	    	clientSocket.send(sendPacket);
+	    }
+		catch (Exception e)
+		{
+			System.err.println("Error: " + e);
+		}
+	    
 	}
 
 }

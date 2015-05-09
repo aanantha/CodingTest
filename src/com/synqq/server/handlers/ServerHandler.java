@@ -15,7 +15,6 @@ public class ServerHandler {
 	public static final String OUTPUT_FOLDER = "C:/Users/amar-blog/Documents/blogProject/workspace/synqq/CodingTest/data/output/";
 	String threadKey;
 	
-		
 	public ServerHandler(String threadKey) {
 		this.threadKey = threadKey;
 		lines = new Vector<DataObject>();
