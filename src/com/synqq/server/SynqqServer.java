@@ -1,17 +1,19 @@
 package com.synqq.server;
 
-import java.io.*; 
-import java.net.*;
-import java.util.HashMap;
+import java.net.DatagramSocket;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.synqq.server.handlers.*;
+import com.synqq.server.handlers.ServerHandler;
 
 public class SynqqServer {
 	
-	DatagramSocket serverSocket;
-	HashMap<String, ServerHandler> handlers = new HashMap<String, ServerHandler> ();
 
 	public SynqqServer() {
+	}
+	public static void main(String[] args) {
+		DatagramSocket serverSocket=null;
+		ConcurrentHashMap<String, ServerHandler> handlers=new ConcurrentHashMap<String, ServerHandler> ();
+		
 		try {
 			serverSocket = new DatagramSocket(9877);
 			System.out.println("Server Started");
@@ -20,61 +22,12 @@ public class SynqqServer {
 			System.err.println("Error: " + e);
 			System.exit(1);
 		}
-		readPackets();
-	}
-
-	public static void main(String[] args) {
 		
-		SynqqServer synqqsrvr = new SynqqServer();
+		for (int i=0; i <5; i++) {
+			//System.out.println("Starting thread count=" + i);
+			SynqqServerThread srvrthread = new SynqqServerThread(handlers, serverSocket);
+			Thread t = new Thread(srvrthread);
+	        t.start();
+		}	
 	}
-	public void readPackets()
-	{
-		boolean done = false;
-		while (!done)
-		{
-			try {
-		            
-				byte[] receiveData = new byte[1024]; 	
-				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-				serverSocket.receive(receivePacket); 
-							
-				if (receivePacket.getLength() > 0) {
-					String sentence = new String(receivePacket.getData());
-					
-					if (sentence != null)
-					{
-						sentence = sentence.trim();
-						
-						
-						String[] values = sentence.split(",");
-						
-						if (values.length == 2) {
-							if (!handlers.containsKey(values[0])) {
-								handlers.put(values[0], new ServerHandler(values[0]));
-							}
-							if (!values[1].equalsIgnoreCase("EOF")) { 
-								
-								handlers.get(values[0]).handleData(values[1]);
-							}
-							else {						
-								handlers.get(values[0]).finish();
-								handlers.remove(values[0]);
-							}
-						}
-					}				
-				}
-				else {
-					System.out.println("No data received from client");
-				}
-			}
-			catch (Exception e)
-			{
-				System.err.println("Error: " + e);
-				e.printStackTrace();
-			}
-		            
-		}
-
-	}
-
 }
